@@ -1,6 +1,9 @@
-# INSTALLATION via repository
 This git-repo contains the files needed to create accompanying RPM files for CentOS/RHEL8 (el8), but they should work for Fedora, Alma Linux, Rocky Linux, etc. also.
 
+Based on the inadyn version provided on https://github.com/troglobit/inadyn
+
+
+# INSTALLATION via repository
 The compiled SElinux policy module should also work on Fedora, and maybe even earlier versions of CentOS.
 
 A complete version of the resulting RPM file can be found in my technoholics-repo.
@@ -13,7 +16,7 @@ yum install https://dev.techno.holics.at/technoholics-repo/el8/technoholics-repo
 * If needed, the gpg key used for signing the RPM packages can be found here: https://dev.techno.holics.at/holics-repo/RPM-GPG-KEY-holicsrepo
 * Now install the inadyn_selinux and preferrably also the inadyn-utils packages.
 yum install inadyn_selinux inadyn
-* Now follow the following instructions under FIRST SETUP as needed.
 
 # Cheers!
+
 

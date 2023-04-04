@@ -31,8 +31,7 @@ BuildRequires:      systemd
 Requires(post):     systemd
 Requires(preun):    systemd
 Requires(postun):   systemd
-Requires:	gnutls, libconfuse
-#, inadyn_selinux
+Requires:	gnutls, libconfuse, inadyn_selinux
 %endif
 
 %if 0%{?rhel} == 6
@@ -155,7 +154,6 @@ fi
 %{_mandir}/man8/inadyn.8*
 %dir %attr(2775,inadyn,inadyn) /var/lib/inadyn
 %dir %attr(2775,inadyn,inadyn) /var/lib/inadyn/.inadyn
-#% {_datadir}/doc/%{name}
 %if 0%{?fedora} || 0%{?rhel} >= 7
 %{_unitdir}/inadyn.service
 %else

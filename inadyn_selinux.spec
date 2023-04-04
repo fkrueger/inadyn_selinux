@@ -9,7 +9,7 @@
 
 Name:   inadyn_selinux
 Version:	1.0
-Release:	4%{?dist}
+Release:	1%{?dist}
 Summary:	SELinux policy module for inadyn (based on the GIT releases)
 BuildRequires: policycoreutils, selinux-policy-devel
 Requires:	selinux-policy, selinux-policy-targeted
