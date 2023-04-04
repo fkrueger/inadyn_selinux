@@ -1,0 +1,10 @@
+/(root|home)/(|[^/]*/).inadyn(/.*)?							        gen_context(system_u:object_r:inadyn_cache_t,s0)
+/var/lib/inadyn(/.*)?									        gen_context(system_u:object_r:inadyn_cache_t,s0)
+
+/usr/bin/inadyn											--	gen_context(system_u:object_r:inadyn_exec_t,s0)
+/usr/bin/inadyn-wrapper.sh									--	gen_context(system_u:object_r:bin_t,s0)
+/etc/inadyn.conf										--	gen_context(system_u:object_r:inadyn_config_t,s0)
+
+/run/inadyn(/.*)?										gen_context(system_u:object_r:inadyn_var_run_t,s0)
+/var/run/inadyn(/.*)?										gen_context(system_u:object_r:inadyn_var_run_t,s0)
+

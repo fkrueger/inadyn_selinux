@@ -1,0 +1,20 @@
+[Unit]
+Description=Simple and small DynDNS client written in the C language
+Documentation=man:inadyn(8)
+After=network.target nss-lookup.target
+
+[Service]
+Type=forking
+User=root
+TimeoutSec=1min
+RemainAfterExit=yes
+KillSignal=TERM
+EnvironmentFile=-/etc/default/inadyn
+WorkingDirectory=/usr/share/doc/inadyn
+ExecStart=/usr/bin/inadyn-wrapper.sh start
+ExecStop=/usr/bin/inadyn-wrapper.sh stop
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,204 @@
+policy_module(inadyn, 20230404.1)
+
+# vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+
+########################################
+#
+# Declarations
+#
+
+require {
+  type system_cronjob_t;
+  type unconfined_t;
+  class dir { add_name create getattr search write };
+  class file { create getattr write };
+
+  type user_home_dir_t;
+
+  # other permissions:
+  type devlog_t;
+  type logrotate_t;
+  type rpm_script_t;
+  type setfiles_t;
+  type setroubleshootd_t;
+  type unconfined_t;
+  type unconfined_service_t;
+}
+
+
+## our contexts:
+type inadyn_t;
+type inadyn_exec_t;
+
+type inadyn_cache_t;
+type inadyn_config_t;
+type inadyn_var_run_t;
+
+
+
+define(`inadyn_all_types',`{ inadyn_t inadyn_exec_t inadyn_cache_t inadyn_config_t inadyn_var_run_t }')
+
+
+
+##
+## >>> See accompanying readme.md for more info (if it exists :p ).
+##
+
+
+
+
+
+
+## DEBUG CYCLE:
+# echo "XX0"; make -f /usr/share/selinux/devel/Makefile
+# echo "XX1"; semodule -r inadyn
+# echo "XX2"; semodule -i /root/selinux/inadyn/inadyn.pp ; restorecon -vR /{home,root}/{,*/}.inadyn/ /{run,var/run}/inadyn /etc/default/ina* /usr/bin/inadyn* /etc/inadyn*
+# echo "XX3"; service inadyn stop; rm -f /var/log/audit/audit.log ; service auditd restart; service inadyn start
+# echo "XX4"; audit2allow -R -i /var/log/audit/audit.log >/root/x ; vi /root/x
+##
+
+
+init_daemon_domain(inadyn_t, inadyn_exec_t)
+
+type_transition unconfined_t inadyn_exec_t : process inadyn_t;
+allow unconfined_t inadyn_t:process transition;
+
+type_transition unconfined_service_t inadyn_exec_t : process inadyn_t;
+allow unconfined_service_t inadyn_t:process transition;
+
+
+#tunable_policy(`inadyn_allow_userhomedir_manage',`',`
+#    allow inadyn_t user_home_dir_t:dir list_dir_perms;
+#    files_search_home(inadyn_t)
+#')
+
+
+## <desc>
+## <p>
+## Allow Calibre general (SElinux) manage - access to all user_home_dir_t / user home dirs. (NOT RECOMMENDED!)
+## - Only needed when you want to have the 'Calibre Library' in your user home dir.
+## </p>
+## </desc>
+#gen_tunable(inadyn_allow_userhomedir_manage, false)
+
+
+
+
+
+#permissive inadyn_t;
+
+
+
+## inadyn_t macros:
+
+
+# general:
+auth_read_passwd_file(inadyn_t)
+kernel_dgram_send(inadyn_t)
+
+# network related:
+kernel_read_network_state(inadyn_t)
+sysnet_read_config(inadyn_t)
+
+# allow reading/writing to devlog_t for obvious logging reasons
+read_files_pattern(inadyn_t, devlog_t, devlog_t)
+read_lnk_files_pattern(inadyn_t, devlog_t, devlog_t)
+read_sock_files_pattern(inadyn_t, devlog_t, devlog_t)
+write_files_pattern(inadyn_t, devlog_t, devlog_t)
+write_lnk_files_pattern(inadyn_t, devlog_t, devlog_t)
+write_sock_files_pattern(inadyn_t, devlog_t, devlog_t)
+
+allow inadyn_t self:unix_dgram_socket { create connect write };
+
+## fs related:
+fs_associate(inadyn_all_types)
+fs_associate_tmpfs(inadyn_all_types)
+
+# cert related:
+miscfiles_read_generic_certs(inadyn_t)
+
+# sssd related:
+sssd_read_public_files(inadyn_t)
+
+# our own files
+getattr_dirs_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+list_dirs_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+manage_dirs_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+getattr_files_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+read_files_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+manage_files_pattern(inadyn_t,inadyn_cache_t,inadyn_cache_t)
+
+getattr_dirs_pattern(inadyn_t,inadyn_config_t,inadyn_config_t)
+list_dirs_pattern(inadyn_t,inadyn_config_t,inadyn_config_t)
+getattr_files_pattern(inadyn_t,inadyn_config_t,inadyn_config_t)
+read_files_pattern(inadyn_t,inadyn_config_t,inadyn_config_t)
+
+getattr_dirs_pattern(inadyn_t,inadyn_exec_t,inadyn_exec_t)
+list_dirs_pattern(inadyn_t,inadyn_exec_t,inadyn_exec_t)
+getattr_files_pattern(inadyn_t,inadyn_exec_t,inadyn_exec_t)
+read_files_pattern(inadyn_t,inadyn_exec_t,inadyn_exec_t)
+exec_files_pattern(inadyn_t,inadyn_exec_t,inadyn_exec_t)
+
+getattr_dirs_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+list_dirs_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+manage_dirs_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+getattr_files_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+read_files_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+manage_files_pattern(inadyn_t,inadyn_var_run_t,inadyn_var_run_t)
+
+
+# and os-related perms
+
+#### setroubleshootd_t
+getattr_dirs_pattern(setroubleshootd_t, inadyn_all_types, inadyn_all_types)
+search_dirs_pattern(setroubleshootd_t, inadyn_all_types, inadyn_all_types)
+getattr_files_pattern(setroubleshootd_t, inadyn_all_types, inadyn_all_types)
+read_files_pattern(setroubleshootd_t, inadyn_all_types, inadyn_all_types)
+
+## rpm_script_t
+getattr_dirs_pattern(rpm_script_t, inadyn_all_types, inadyn_all_types)
+search_dirs_pattern(rpm_script_t, inadyn_all_types, inadyn_all_types)
+getattr_files_pattern(rpm_script_t, inadyn_all_types, inadyn_all_types)
+
+## setfiles_t (ie. restorecon)
+list_dirs_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+
+# relabelfrom:
+relabelfrom_dirs_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelfrom_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelfrom_fifo_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelfrom_lnk_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelfrom_sock_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+
+# relabelto:
+relabelto_dirs_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelto_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelto_fifo_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelto_lnk_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+relabelto_sock_files_pattern(setfiles_t, inadyn_all_types, inadyn_all_types)
+
+## unconfined_service_t
+manage_dirs_pattern(unconfined_service_t, inadyn_all_types, inadyn_all_types)
+exec_files_pattern(unconfined_service_t, inadyn_all_types, inadyn_all_types)
+manage_files_pattern(unconfined_service_t, inadyn_all_types, inadyn_all_types)
+manage_lnk_files_pattern(unconfined_service_t, inadyn_all_types, inadyn_all_types)
+
+## unconfined_t
+# so we can restorecon our own files..
+allow unconfined_t inadyn_all_types:dir {relabelfrom relabelto};
+allow unconfined_t inadyn_all_types:file {relabelfrom relabelto};
+
+manage_dirs_pattern(unconfined_t, inadyn_all_types, inadyn_all_types)
+exec_files_pattern(unconfined_t, inadyn_all_types, inadyn_all_types)
+manage_files_pattern(unconfined_t, inadyn_all_types, inadyn_all_types)
+manage_lnk_files_pattern(unconfined_t, inadyn_all_types, inadyn_all_types)
+
+## logrotate_t
+manage_dirs_pattern(logrotate_t, inadyn_all_types, inadyn_all_types)
+manage_files_pattern(logrotate_t, inadyn_all_types, inadyn_all_types)
+
+## system_cronjob_t
+manage_dirs_pattern(system_cronjob_t, inadyn_all_types, inadyn_all_types)
+manage_files_pattern(system_cronjob_t, inadyn_all_types, inadyn_all_types)
+
+

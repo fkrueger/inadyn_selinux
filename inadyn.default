@@ -1,0 +1,12 @@
+# Inadyn configuration options
+
+# Basic options
+USER=inadyn
+GROUP=inadyn
+CFGFILE="/etc/inadyn.conf"
+PIDDIR="/var/run/inadyn"
+PIDFILE="$PIDDIR/inadyn.pid"
+
+# Options used to start inadyn
+OPTS="-P $PIDFILE -f ${CFGFILE} "
+
